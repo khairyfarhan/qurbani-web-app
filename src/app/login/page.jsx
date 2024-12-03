@@ -1,4 +1,4 @@
-// src/app/login/page.tsx
+// src/app/login/page.jsx
 "use client";
 
 import { useState } from "react";
@@ -9,13 +9,13 @@ import { useRouter } from "next/navigation";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
   const router = useRouter();
 
   const handleLogin = async () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push("/"); // Redirect to the homepage after successful login
+      router.push("/");
     } catch (err) {
       setError("Login failed. Please check your credentials.");
     }
