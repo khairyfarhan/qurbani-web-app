@@ -1,23 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import { signOut } from "firebase/auth";
-import { auth } from "../firebase/firebaseConfig";
+import { useAuth } from "@/context/AuthContext"; // Use AuthContext for signOut
 import { useRouter } from "next/navigation";
 import { Menu, X, User } from "lucide-react";
 
 const Navbar = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth(); // Use signOut from AuthContext
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(false); // Add loading state
 
   const handleLogout = async () => {
+    setLoading(true);
     try {
-      await signOut(auth);
-      router.push("/login");
+      await signOut(); // Use context signOut
+      router.push("/login"); // Redirect to login page
     } catch (error) {
       console.error("Logout failed:", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -37,9 +39,10 @@ const Navbar = () => {
                 </div>
                 <button
                   onClick={handleLogout}
+                  disabled={loading}
                   className="bg-red-500 px-4 py-2 rounded hover:bg-red-700 transition-colors"
                 >
-                  Logout
+                  {loading ? "Logging out..." : "Logout"}
                 </button>
               </>
             ) : (
@@ -71,9 +74,10 @@ const Navbar = () => {
                 </div>
                 <button
                   onClick={handleLogout}
+                  disabled={loading}
                   className="w-full bg-red-500 px-4 py-2 rounded hover:bg-red-700 transition-colors"
                 >
-                  Logout
+                  {loading ? "Logging out..." : "Logout"}
                 </button>
               </>
             ) : (

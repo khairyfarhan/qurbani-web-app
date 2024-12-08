@@ -1,50 +1,75 @@
-// src/app/login/page.jsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase/firebaseConfig";
+import { auth } from "@/firebase/firebaseConfig";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { user, userData } = useAuth();
 
-  const handleLogin = async () => {
+  // Redirect only when user data is available and valid
+  useEffect(() => {
+    if (user && userData) {
+      const role = userData.role;
+      router.push(role === "admin" ? "/admin/dashboard" : "/dashboard");
+    }
+  }, [user, userData, router]);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push("/");
+      // Role-based redirection will be handled in useEffect
     } catch (err) {
-      setError("Login failed. Please check your credentials.");
+      setError("Invalid email or password");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <h1 className="text-3xl font-bold mb-4">Login to Qurbani Web App</h1>
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Email"
-        className="mb-2 p-2 border rounded"
-      />
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="Password"
-        className="mb-4 p-2 border rounded"
-      />
-      <button
-        onClick={handleLogin}
-        className="bg-blue-600 text-white py-2 px-4 rounded"
-      >
-        Login
-      </button>
-      {error && <p className="text-red-500 mt-4">{error}</p>}
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      <form onSubmit={handleLogin} className="w-full max-w-md space-y-4">
+        <h1 className="text-3xl font-bold mb-4">Login to Qurbani Web App</h1>
+        <div>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            required
+            className="w-full p-2 border rounded"
+          />
+        </div>
+        <div>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            required
+            className="w-full p-2 border rounded"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+        >
+          {loading ? "Logging in..." : "Login"}
+        </button>
+        {error && <div className="text-red-600">{error}</div>}
+      </form>
     </div>
   );
 }

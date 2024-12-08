@@ -1,11 +1,11 @@
-// src/app/admin/dashboard/page.tsx
 "use client";
 
-import ProtectedRoute from "../../../components/ProtectedRoute";
-import Navbar from "../../../components/Navbar";
-import UserManagement from "../../../components/UserManagement";
+import ProtectedRoute from "@/components/ui/ProtectedRoute";
+import Navbar from "@/components/ui/Navbar";
+import UserManagement from "@/components/ui/UserManagement";
+import withRole from "@/utils/roleMiddleware";
 
-export default function AdminDashboard() {
+function AdminDashboard() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-100">
@@ -18,3 +18,5 @@ export default function AdminDashboard() {
     </ProtectedRoute>
   );
 }
+
+export default withRole(AdminDashboard, "admin");

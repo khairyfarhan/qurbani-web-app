@@ -22,7 +22,19 @@ export const AuthProvider = ({ children }) => {
       async (user) => {
         if (user) {
           try {
-            const userDoc = await getDoc(doc(db, "users", user.uid));
+            const userDocRef = doc(db, "users", user.uid);
+            const userDoc = await getDoc(userDocRef);
+
+            // Debugging: Log the entire document snapshot
+            if (userDoc.exists()) {
+              console.log("Firestore Document Data:", userDoc.data());
+            } else {
+              console.error(
+                "No user document found in Firestore for UID:",
+                user.uid,
+              );
+            }
+
             setState((prev) => ({
               ...prev,
               user,
@@ -32,6 +44,7 @@ export const AuthProvider = ({ children }) => {
               error: null,
             }));
           } catch (error) {
+            console.error("Error fetching user document:", error);
             setState((prev) => ({
               ...prev,
               error: error.message,
@@ -51,6 +64,7 @@ export const AuthProvider = ({ children }) => {
         }
       },
       (error) => {
+        console.error("Error in onAuthStateChanged:", error);
         setState((prev) => ({
           ...prev,
           error: error.message,
@@ -66,10 +80,20 @@ export const AuthProvider = ({ children }) => {
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
+      // Clear state after sign out
+      setState((prev) => ({
+        ...prev,
+        user: null,
+        userData: null,
+        error: null,
+      }));
     } catch (error) {
+      console.error("Error during sign out:", error);
       setState((prev) => ({ ...prev, error: error.message }));
     }
   };
+
+  const hasRole = (role) => state.userData?.role === role;
 
   const value = {
     user: state.user,
@@ -78,9 +102,10 @@ export const AuthProvider = ({ children }) => {
     error: state.error,
     initialized: state.initialized,
     signOut,
-    isAdmin: state.userData?.role === "admin",
-    isAgent: state.userData?.role === "agent",
-    isSupplier: state.userData?.role === "supplier",
+    hasRole,
+    isAdmin: hasRole("admin"),
+    isAgent: hasRole("agent"),
+    isSupplier: hasRole("supplier"),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase/firebaseConfig";
+import { db } from "../../firebase/firebaseConfig";
 
 const ProtectedRoute = ({ children, requiredRoles = [] }) => {
   const { user, loading } = useAuth();
