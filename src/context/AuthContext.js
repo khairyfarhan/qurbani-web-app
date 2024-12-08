@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
     userData: null,
     loading: true,
     error: null,
-    initialized: false
+    initialized: false,
   });
 
   useEffect(() => {
@@ -23,41 +23,41 @@ export const AuthProvider = ({ children }) => {
         if (user) {
           try {
             const userDoc = await getDoc(doc(db, "users", user.uid));
-            setState(prev => ({
+            setState((prev) => ({
               ...prev,
               user,
               userData: userDoc.data(),
               loading: false,
               initialized: true,
-              error: null
+              error: null,
             }));
           } catch (error) {
-            setState(prev => ({
+            setState((prev) => ({
               ...prev,
               error: error.message,
               loading: false,
-              initialized: true
+              initialized: true,
             }));
           }
         } else {
-          setState(prev => ({
+          setState((prev) => ({
             ...prev,
             user: null,
             userData: null,
             loading: false,
             initialized: true,
-            error: null
+            error: null,
           }));
         }
       },
       (error) => {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           error: error.message,
           loading: false,
-          initialized: true
+          initialized: true,
         }));
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await firebaseSignOut(auth);
     } catch (error) {
-      setState(prev => ({ ...prev, error: error.message }));
+      setState((prev) => ({ ...prev, error: error.message }));
     }
   };
 
@@ -78,16 +78,12 @@ export const AuthProvider = ({ children }) => {
     error: state.error,
     initialized: state.initialized,
     signOut,
-    isAdmin: state.userData?.role === 'admin',
-    isAgent: state.userData?.role === 'agent',
-    isSupplier: state.userData?.role === 'supplier'
+    isAdmin: state.userData?.role === "admin",
+    isAgent: state.userData?.role === "agent",
+    isSupplier: state.userData?.role === "supplier",
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

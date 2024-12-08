@@ -24,7 +24,7 @@ const ProtectedRoute = ({ children, requiredRoles = [] }) => {
         if (requiredRoles.length > 0) {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           const userData = userDoc.data();
-          
+
           if (!userData || !requiredRoles.includes(userData.role)) {
             router.push("/unauthorized");
             return;

@@ -6,7 +6,7 @@
 /* Optional: Custom global styles */
 body {
   @apply bg-gray-100 text-gray-900;
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
 }
 
 a {

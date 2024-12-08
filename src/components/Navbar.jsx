@@ -26,7 +26,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <h2 className="text-xl font-bold">Qurbani Web App Admin</h2>
-          
+
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-4">
             {user ? (
@@ -52,7 +52,11 @@ const Navbar = () => {
             className="md:hidden p-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </button>
         </div>
 

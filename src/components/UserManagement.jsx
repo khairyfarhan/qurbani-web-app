@@ -2,9 +2,26 @@
 
 import { useState, useEffect } from "react";
 import { auth, db } from "../firebase/firebaseConfig";
-import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, startAfter } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query,
+  orderBy,
+  limit,
+  startAfter,
+} from "firebase/firestore";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription } from "@radix-ui/react-alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from "@radix-ui/react-alert-dialog";
 const USERS_PER_PAGE = 10;
 
 const UserManagement = () => {
@@ -13,13 +30,13 @@ const UserManagement = () => {
     loading: true,
     error: null,
     lastDoc: null,
-    hasMore: true
+    hasMore: true,
   });
-  
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    role: "agent"
+    role: "agent",
   });
 
   const [search, setSearch] = useState("");
@@ -29,22 +46,24 @@ const UserManagement = () => {
   useEffect(() => {
     const usersRef = collection(db, "users");
     const q = query(usersRef, orderBy("email"), limit(USERS_PER_PAGE));
-    
-    const unsubscribe = onSnapshot(q,
+
+    const unsubscribe = onSnapshot(
+      q,
       (snapshot) => {
-        const usersList = snapshot.docs.map(doc => ({
+        const usersList = snapshot.docs.map((doc) => ({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
         }));
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           users: usersList,
           lastDoc: snapshot.docs[snapshot.docs.length - 1],
           loading: false,
-          hasMore: snapshot.docs.length === USERS_PER_PAGE
+          hasMore: snapshot.docs.length === USERS_PER_PAGE,
         }));
       },
-      (error) => setState(prev => ({ ...prev, error: error.message, loading: false }))
+      (error) =>
+        setState((prev) => ({ ...prev, error: error.message, loading: false })),
     );
 
     return () => unsubscribe();
@@ -58,20 +77,20 @@ const UserManagement = () => {
       usersRef,
       orderBy("email"),
       startAfter(state.lastDoc),
-      limit(USERS_PER_PAGE)
+      limit(USERS_PER_PAGE),
     );
 
     const snapshot = await getDocs(q);
-    const newUsers = snapshot.docs.map(doc => ({
+    const newUsers = snapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data()
+      ...doc.data(),
     }));
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       users: [...prev.users, ...newUsers],
       lastDoc: snapshot.docs[snapshot.docs.length - 1],
-      hasMore: snapshot.docs.length === USERS_PER_PAGE
+      hasMore: snapshot.docs.length === USERS_PER_PAGE,
     }));
   };
 
@@ -91,54 +110,55 @@ const UserManagement = () => {
   const handleAddUser = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
-    setState(prev => ({ ...prev, loading: true, error: null }));
-    
+
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+
     try {
       const userCredential = await createUserWithEmailAndPassword(
-        auth, 
-        formData.email, 
-        formData.password
+        auth,
+        formData.email,
+        formData.password,
       );
 
       await addDoc(collection(db, "users"), {
         uid: userCredential.user.uid,
         email: formData.email,
         role: formData.role,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       });
 
       setFormData({ email: "", password: "", role: "agent" });
     } catch (error) {
-      setState(prev => ({ ...prev, error: error.message }));
+      setState((prev) => ({ ...prev, error: error.message }));
     } finally {
-      setState(prev => ({ ...prev, loading: false }));
+      setState((prev) => ({ ...prev, loading: false }));
     }
   };
 
   const handleDeleteConfirm = async () => {
     if (!deleteUser) return;
-    
-    setState(prev => ({ ...prev, loading: true, error: null }));
+
+    setState((prev) => ({ ...prev, loading: true, error: null }));
     try {
       await deleteDoc(doc(db, "users", deleteUser.id));
       setDeleteUser(null);
     } catch (error) {
-      setState(prev => ({ ...prev, error: error.message }));
+      setState((prev) => ({ ...prev, error: error.message }));
     } finally {
-      setState(prev => ({ ...prev, loading: false }));
+      setState((prev) => ({ ...prev, loading: false }));
     }
   };
 
-  const filteredUsers = state.users.filter(user => 
-    user.email.toLowerCase().includes(search.toLowerCase()) ||
-    user.role.toLowerCase().includes(search.toLowerCase())
+  const filteredUsers = state.users.filter(
+    (user) =>
+      user.email.toLowerCase().includes(search.toLowerCase()) ||
+      user.role.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">User Management</h2>
-      
+
       {state.loading && !state.users.length ? (
         <div className="flex justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
@@ -150,7 +170,9 @@ const UserManagement = () => {
               <input
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, email: e.target.value }))
+                }
                 placeholder="Email"
                 className="p-2 border rounded flex-1"
                 required
@@ -158,14 +180,18 @@ const UserManagement = () => {
               <input
                 type="password"
                 value={formData.password}
-                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, password: e.target.value }))
+                }
                 placeholder="Password"
                 className="p-2 border rounded flex-1"
                 required
               />
               <select
                 value={formData.role}
-                onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, role: e.target.value }))
+                }
                 className="p-2 border rounded"
               >
                 <option value="agent">Agent</option>
@@ -184,7 +210,7 @@ const UserManagement = () => {
               <div className="text-red-600">{validationError}</div>
             )}
           </form>
-          
+
           {state.error && (
             <div className="text-red-600 mb-4">{state.error}</div>
           )}
@@ -198,15 +224,20 @@ const UserManagement = () => {
               className="p-2 border rounded w-full"
             />
           </div>
-          
+
           <div>
             <h3 className="text-xl font-bold mb-2">Existing Users</h3>
             <ul className="space-y-2">
               {filteredUsers.map((user) => (
-                <li key={user.id} className="flex items-center justify-between bg-gray-50 p-3 rounded">
+                <li
+                  key={user.id}
+                  className="flex items-center justify-between bg-gray-50 p-3 rounded"
+                >
                   <div>
                     <span className="font-medium">{user.email}</span>
-                    <span className="ml-2 text-sm text-gray-600">({user.role})</span>
+                    <span className="ml-2 text-sm text-gray-600">
+                      ({user.role})
+                    </span>
                   </div>
                   <button
                     onClick={() => setDeleteUser(user)}
@@ -218,7 +249,7 @@ const UserManagement = () => {
                 </li>
               ))}
             </ul>
-            
+
             {state.hasMore && (
               <button
                 onClick={loadMore}
@@ -230,12 +261,16 @@ const UserManagement = () => {
             )}
           </div>
 
-          <AlertDialog open={!!deleteUser} onOpenChange={() => setDeleteUser(null)}>
+          <AlertDialog
+            open={!!deleteUser}
+            onOpenChange={() => setDeleteUser(null)}
+          >
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete User</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Are you sure you want to delete {deleteUser?.email}? This action cannot be undone.
+                  Are you sure you want to delete {deleteUser?.email}? This
+                  action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

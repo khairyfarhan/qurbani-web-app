@@ -3,7 +3,7 @@ module.exports = {
   content: [
     "./src/**/*.{js,jsx}",
     "./app/**/*.{js,jsx}",
-    "./components/**/*.{js,jsx}"
+    "./components/**/*.{js,jsx}",
   ],
   darkMode: "class", // Enable class-based dark mode
   theme: {
@@ -19,7 +19,7 @@ module.exports = {
         dark: {
           background: "#0a0a0a",
           foreground: "#ededed",
-        }
+        },
       },
       fontFamily: {
         sans: ["var(--font-geist-sans)"],
@@ -28,4 +28,4 @@ module.exports = {
     },
   },
   plugins: [],
-}
+};
