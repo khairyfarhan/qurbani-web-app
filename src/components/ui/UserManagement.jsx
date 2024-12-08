@@ -1,3 +1,5 @@
+"use client";
+
 // UserManagement.jsx
 
 import React, { useState, useEffect } from "react";
@@ -21,6 +23,7 @@ export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("user"); // Default role
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [lastVisible, setLastVisible] = useState(null);
@@ -72,26 +75,29 @@ export default function UserManagement() {
     e.preventDefault();
     setError(null);
     setSuccess(null);
-
+  
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
+      // Add a new user document directly to Firestore
+      const newUserRef = await addDoc(collection(db, "users"), {
         email,
-        password
-      );
-      const userId = userCredential.user.uid;
-      await addDoc(collection(db, "users"), {
-        uid: userId,
-        email,
-        role: "user", // Default role
+        role, // Role from the dropdown
+        uid: "", // Leave UID empty for now
+        createdAt: new Date(),
       });
+  
       setSuccess("User added successfully");
       setEmail("");
       setPassword("");
+      setRole("user"); // Reset role to default
+  
+      // Log the document ID for debugging
+      console.log("User document added with ID:", newUserRef.id);
     } catch (err) {
-      setError(err.message);
+      setError(`Error adding user: ${err.message}`);
+      console.error(err);
     }
   };
+  
 
   // Delete a user
   const handleDeleteUser = async (id) => {
@@ -99,7 +105,7 @@ export default function UserManagement() {
       await deleteDoc(doc(db, "users", id));
       setSuccess("User deleted successfully");
     } catch (err) {
-      setError(err.message);
+      setError(`Error deleting user: ${err.message}`);
     }
   };
 
@@ -108,14 +114,14 @@ export default function UserManagement() {
       <h2 className="text-2xl font-bold mb-4">User Management</h2>
 
       {/* Add User Form */}
-      <form onSubmit={handleAddUser} className="mb-4">
+      <form onSubmit={handleAddUser} className="mb-4 space-y-4">
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="border p-2 mr-2"
+          className="border p-2 w-full"
         />
         <input
           type="password"
@@ -123,9 +129,21 @@ export default function UserManagement() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="border p-2 mr-2"
+          className="border p-2 w-full"
         />
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2">
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          className="border p-2 w-full"
+        >
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+          <option value="agent">Agent</option>
+        </select>
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
           Add User
         </button>
       </form>
@@ -138,7 +156,7 @@ export default function UserManagement() {
       <ul className="list-disc pl-6">
         {users.map((user) => (
           <li key={user.id} className="mb-2">
-            {user.email} - {user.role}
+            {user.email} - {user.role || "No role assigned"}
             <button
               onClick={() => handleDeleteUser(user.id)}
               className="text-red-500 ml-4"

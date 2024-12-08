@@ -77,6 +77,10 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    console.log("AuthContext State Updated:", state);
+  }, [state]);
+
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
