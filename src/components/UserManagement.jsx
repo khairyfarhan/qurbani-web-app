@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import { auth, db } from "../firebase/firebaseConfig";
 import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, limit, startAfter } from "firebase/firestore";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription } from "@/components/ui/alert-dialog";
-
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription } from "@radix-ui/react-alert-dialog";
 const USERS_PER_PAGE = 10;
 
 const UserManagement = () => {

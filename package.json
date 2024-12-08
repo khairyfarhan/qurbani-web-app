@@ -3,14 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-alert-dialog": "^1.1.2",
+    "firebase": "^11.0.2",
     "lucide-react": "^0.464.0",
-    "next": "14.0.4",
+    "next": "^14.2.20",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
