@@ -9,7 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null); // Renamed for clarity
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { user, userData } = useAuth();
@@ -25,13 +25,14 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setErrorMessage(null);
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
       // Role-based redirection will be handled in useEffect
     } catch (err) {
-      setError("Invalid email or password");
+      console.error("Login failed:", err); // Log error for debugging
+      setErrorMessage("Invalid email or password");
     } finally {
       setLoading(false);
     }
@@ -68,7 +69,7 @@ export default function Login() {
         >
           {loading ? "Logging in..." : "Login"}
         </button>
-        {error && <div className="text-red-600">{error}</div>}
+        {errorMessage && <div className="text-red-600">{errorMessage}</div>}
       </form>
     </div>
   );

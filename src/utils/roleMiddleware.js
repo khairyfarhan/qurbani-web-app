@@ -13,7 +13,7 @@ export default function withRole(Component, requiredRole) {
       if (initialized && (!user || userData?.role !== requiredRole)) {
         router.push("/login"); // Redirect if unauthorized
       }
-    }, [user, userData, loading, initialized, requiredRole, router]);
+    }, [user, userData, loading, initialized, router]); // Removed `requiredRole` from dependency array
 
     // Show a loading spinner while user data is being checked
     if (loading || !initialized) return <div>Loading...</div>;

@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { db } from "@/firebase/firebaseConfig";
-import { collection, doc, getDocs, updateDoc, deleteDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore";
 import Navbar from "@/components/ui/Navbar";
 
 export default function UserManagement() {
@@ -186,10 +192,7 @@ export default function UserManagement() {
                     type="text"
                     value={editingUser.country || ""}
                     onChange={(e) =>
-                      setEditingUser({
-                        ...editingUser,
-                        country: e.target.value,
-                      })
+                      setEditingUser({ ...editingUser, country: e.target.value })
                     }
                     className="w-full p-2 border rounded"
                   />

@@ -1,82 +1,151 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { db, auth } from "@/firebase/firebaseConfig";
+import { db } from "@/firebase/firebaseConfig";
 import {
   collection,
-  query,
-  where,
-  onSnapshot,
-  doc,
-  deleteDoc,
+  getDoc,
+  getDocs,
   updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import Navbar from "@/components/ui/Navbar";
 
 export default function PendingUsers() {
   const [pendingUsers, setPendingUsers] = useState([]);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [loading, setLoading] = useState(false);
 
+  // Fetch pending users from Firestore
   useEffect(() => {
-    const q = query(collection(db, "pendingUsers"), where("status", "==", "pending"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const users = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setPendingUsers(users);
-    });
+    const fetchPendingUsers = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "pendingUsers"));
+        const users = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setPendingUsers(users);
+      } catch (err) {
+        console.error("Error fetching pending users:", err); // Log the error
+        setErrorMessage("Failed to fetch pending users");
+      }
+    };
 
-    return () => unsubscribe();
+    fetchPendingUsers();
   }, []);
 
-  const approveUser = async (user) => {
+  // Approve user and assign a role
+  const handleApprove = async (userId, role) => {
+    setLoading(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
     try {
-      // Create Firebase Auth account
-      const userCredential = await createUserWithEmailAndPassword(auth, user.email, user.password);
-      const uid = userCredential.user.uid;
+      const userDocRef = doc(db, "pendingUsers", userId);
+      const userDocSnapshot = await getDoc(userDocRef);
 
-      // Add to Firestore `users` collection
-      await updateDoc(doc(db, "pendingUsers", user.id), { status: "approved" });
-      await updateDoc(doc(db, "users", uid), {
-        email: user.email,
-        name: user.name,
-        company: user.company,
-        role: "user", // Default role
-        createdAt: user.requestedAt,
-      });
+      if (!userDocSnapshot.exists()) {
+        throw new Error("User document does not exist");
+      }
 
-      setSuccess(`User ${user.email} approved successfully.`);
+      const userData = userDocSnapshot.data();
+
+      // Add the approved user to the "users" collection
+      await updateDoc(doc(db, "users", userId), { ...userData, role });
+      // Remove from "pendingUsers"
+      await deleteDoc(userDocRef);
+
+      setPendingUsers((prev) => prev.filter((user) => user.id !== userId));
+      setSuccessMessage("User approved successfully");
     } catch (err) {
-      setError("Error approving user: " + err.message);
+      console.error("Error approving user:", err); // Log the error
+      setErrorMessage("Failed to approve user. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const rejectUser = async (userId) => {
+  const handleReject = async (userId) => {
+    setLoading(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
     try {
-      await deleteDoc(doc(db, "pendingUsers", userId));
-      setSuccess("User registration rejected.");
+      const userDocRef = doc(db, "pendingUsers", userId);
+      await deleteDoc(userDocRef);
+
+      setPendingUsers((prev) => prev.filter((user) => user.id !== userId));
+      setSuccessMessage("User rejected successfully");
     } catch (err) {
-      setError("Error rejecting user: " + err.message);
+      console.error("Error rejecting user:", err); // Log the error
+      setErrorMessage("Failed to reject user. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Pending User Approvals</h2>
-      {pendingUsers.map((user) => (
-        <div key={user.id} className="mb-4 p-4 border rounded">
-          <p>Name: {user.name}</p>
-          <p>Email: {user.email}</p>
-          <p>Company: {user.company}</p>
-          <button onClick={() => approveUser(user)} className="bg-green-500 px-4 py-2 rounded text-white">
-            Approve
-          </button>
-          <button onClick={() => rejectUser(user.id)} className="bg-red-500 px-4 py-2 rounded text-white ml-4">
-            Reject
-          </button>
-        </div>
-      ))}
-      {error && <p className="text-red-500 mt-4">{error}</p>}
-      {success && <p className="text-green-500 mt-4">{success}</p>}
+      <Navbar />
+
+      <div className="container mx-auto mt-4">
+        <h2 className="text-2xl font-bold mb-4">Pending User Approvals</h2>
+
+        {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+        {successMessage && <p className="text-green-500">{successMessage}</p>}
+
+        <ul className="space-y-4">
+          {pendingUsers.map((user) => (
+            <li
+              key={user.id}
+              className="flex items-center justify-between p-4 border rounded shadow-sm"
+            >
+              <div>
+                <p>
+                  <strong>Email:</strong> {user.email}
+                </p>
+                <p>
+                  <strong>Name:</strong> {user.name}
+                </p>
+                <p>
+                  <strong>Phone:</strong> {user.phone}
+                </p>
+                <p>
+                  <strong>Country:</strong> {user.country}
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <select
+                  defaultValue="user"
+                  onChange={(e) => (user.role = e.target.value)}
+                  className="border rounded px-2 py-1"
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                  <option value="agent">Agent</option>
+                  <option value="supplier">Supplier</option>
+                </select>
+                <button
+                  onClick={() => handleApprove(user.id, user.role)}
+                  disabled={loading}
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
+                >
+                  Approve
+                </button>
+                <button
+                  onClick={() => handleReject(user.id)}
+                  disabled={loading}
+                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700"
+                >
+                  Reject
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
