@@ -35,7 +35,8 @@ const Navbar = () => {
     if (userData?.role === "admin") {
       links.push(
         { name: "Pending Users", href: "/admin/pending-users" },
-        { name: "User Management", href: "/admin/user-management" }
+        { name: "User Management", href: "/admin/user-management" },
+        { name: "Products", href: "/admin/products" } // Add the Products page link
       );
     }
 

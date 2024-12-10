@@ -14,13 +14,23 @@ export default function Login() {
   const router = useRouter();
   const { user, userData } = useAuth();
 
+
   // Redirect only when user data is available and valid
   useEffect(() => {
     if (user && userData) {
       const role = userData.role;
-      router.push(role === "admin" ? "/admin/dashboard" : "/dashboard");
+
+      // Role-based redirection
+      if (role === "admin") {
+        router.push("/admin/dashboard");
+      } else if (role === "agent") {
+        router.push("/agent/dashboard");
+      } else {
+        router.push("/dashboard"); // Default dashboard for other roles
+      }
     }
   }, [user, userData, router]);
+
 
   const handleLogin = async (e) => {
     e.preventDefault();
